@@ -5,8 +5,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
-const PORT = 3000;
-
+const PORT = process.env.PORT || 3000;
 const FEES = {
   buy: 0.007,
   sell: 0.006
