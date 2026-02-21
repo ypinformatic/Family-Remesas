@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Radar Arbitraje CLP → LATAM</title>
+  <style>
+    :root{--bg:#0b1220;--card:#111a2e;--txt:#e9eefc;--muted:#a7b4d6;--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;--blue:#1f4fd8;}
+    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#070b14,var(--bg));color:var(--txt);padding:22px}
+    .wrap{max-width:1150px;margin:0 auto}
+    h1{margin:0 0 8px 0;font-size:22px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .card{background:rgba(17,26,46,.9);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
+    .ctl{min-width:180px}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input{width:100%;background:#0a1020;color:var(--txt);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:9px}
+    .btn{cursor:pointer;background:var(--blue);border:none;color:white;border-radius:12px;padding:10px 14px;font-weight:800}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;font-weight:900}
+    .ok{background:rgba(34,197,94,.15);color:var(--ok)}
+    .bad{background:rgba(239,68,68,.15);color:var(--bad)}
+    .warn{background:rgba(245,158,11,.15);color:var(--warn)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:right}
+    th{color:var(--muted);font-size:12px}
+    th:first-child, td:first-child{text-align:left}
+    .mini{font-size:12px;color:var(--muted)}
+    .best{outline:2px solid rgba(34,197,94,.5); border-radius:12px}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
+    @media(min-width:900px){.grid{grid-template-columns:2fr 1fr}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📈 Radar CLP → USDT → LATAM (P2P)</h1>
+  <div class="mini" id="status">—</div>
+
+  <div class="row" style="margin-top:12px">
+    <div class="card ctl">
+      <label>Capital CLP</label>
+      <input id="capital" type="number" value="20000"/>
+    </div>
+    <div class="card ctl">
+      <label>Objetivo Ganancia (%)</label>
+      <input id="profit" type="number" value="20" step="0.1"/>
+    </div>
+    <div class="card ctl">
+      <label>Fee compra (%)</label>
+      <input id="feeBuy" type="number" value="7" step="0.1"/>
+    </div>
+    <div class="card ctl">
+      <label>Fee venta (%)</label>
+      <input id="feeSell" type="number" value="6" step="0.1"/>
+    </div>
+    <div class="card ctl">
+      <label>Refresh (seg)</label>
+      <input id="refreshSec" type="number" value="10" step="1"/>
+    </div>
+    <div class="card ctl">
+      <label>Alertas</label>
+      <div class="mini">
+        <input id="sound" type="checkbox" checked/> Sonido<br/>
+        <input id="notif" type="checkbox"/> Notificación
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:end">
+      <button class="btn" id="refreshBtn">Actualizar</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div><b>Ranking (mayor rentabilidad primero)</b></div>
+        <div class="pill warn" id="bestPill">Mejor: —</div>
+      </div>
+
+      <table style="margin-top:10px">
+        <thead>
+          <tr>
+            <th>Destino</th>
+            <th>USDT/CLP BUY</th>
+            <th>USDT/X SELL</th>
+            <th>CLP/X implícito</th>
+            <th>Rentabilidad</th>
+            <th>Objetivo</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <b>Histórico (últimas 50 oportunidades)</b>
+      <div class="mini" style="margin-top:6px">Guarda solo cuando hay oportunidad ≥ objetivo.</div>
+      <div style="margin-top:10px;max-height:420px;overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Destino</th>
+              <th>ROI</th>
+            </tr>
+          </thead>
+          <tbody id="hist"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="clear">Limpiar histórico</button>
+        <button class="btn" id="export">Export CSV</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = "http://localhost:5177"; // mismo host (para deploy)
+const FIATS = ["VES","BRL","USD","COP","PEN"]; // VES Venezuela, BRL Brasil, USD (Ecuador usa USD), COP Colombia, PEN Perú
+
+const fmt = (n, d=2) => (n==null||Number.isNaN(n)) ? "—" : n.toFixed(d);
+const pct = (n) => (n==null||Number.isNaN(n)) ? "—" : (n*100).toFixed(2)+"%";
+
+function beep(){
+  // beep simple con WebAudio
+  const ctx = new (window.AudioContext||window.webkitAudioContext)();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type="sine"; o.frequency.value=880;
+  g.gain.value=0.08;
+  o.connect(g); g.connect(ctx.destination);
+  o.start();
+  setTimeout(()=>{o.stop(); ctx.close();}, 160);
+}
+
+async function notify(title, body){
+  if(!("Notification" in window)) return;
+  if(Notification.permission !== "granted"){
+    const p = await Notification.requestPermission();
+    if(p !== "granted") return;
+  }
+  new Notification(title, { body });
+}
+
+function loadHistory(){
+  try { return JSON.parse(localStorage.getItem("arb_history")||"[]"); }
+  catch { return []; }
+}
+function saveHistory(arr){
+  localStorage.setItem("arb_history", JSON.stringify(arr.slice(0,50)));
+}
+function renderHistory(){
+  const hist = loadHistory();
+  const tb = document.querySelector("#hist");
+  tb.innerHTML = hist.map(x=>`
+    <tr>
+      <td>${x.time}</td>
+      <td>${x.dest}</td>
+      <td>${x.roi}</td>
+    </tr>
+  `).join("");
+}
+
+function exportCSV(){
+  const hist = loadHistory();
+  const lines = ["time,dest,roi"];
+  for(const x of hist) lines.push(`${x.time},${x.dest},${x.roi}`);
+  const blob = new Blob([lines.join("\n")], {type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "historico_oportunidades.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+let lastAlertKey = "";
+
+async function load(){
+  const capital = Number(document.querySelector("#capital").value||0);
+  const profitTarget = Number(document.querySelector("#profit").value||20)/100;
+
+  // fees como porcentajes (7 = 7%)
+  const feeBuy = Number(document.querySelector("#feeBuy").value||0)/100;
+  const feeSell = Number(document.querySelector("#feeSell").value||0)/100;
+
+  const url = `${API_BASE}/api/quotes?fiats=CLP,${FIATS.join(",")}&volMinUSDT=10&nAds=5`;
+  const res = await fetch(url);
+  const json = await res.json();
+  if(!json.ok) throw new Error(json.error||"Error API");
+
+  // CLP legs
+  const clpBuy = json.quotes?.CLP?.buy?.weighted;   // compras USDT con CLP
+  const clpSell = json.quotes?.CLP?.sell?.weighted; // vendes USDT por CLP
+
+  if(!clpBuy || !clpSell) throw new Error("No hay precios CLP (buy/sell).");
+
+  const rows = [];
+
+  for(const dest of FIATS){
+
+    // DEST legs
+    const sellDest = json.quotes?.[dest]?.sell?.weighted; // vendes USDT por DEST
+    const buyDest  = json.quotes?.[dest]?.buy?.weighted;  // compras USDT con DEST
+
+    // Si Binance no tiene buy o sell para ese FIAT (ej: BRL a veces), se salta
+    if(!sellDest || !buyDest) continue;
+
+    // 1) CLP -> USDT (buy)
+    const usdt1 = (capital / clpBuy) * (1 - feeBuy);
+
+    // 2) USDT -> DEST (sell)
+    const destAmt = (usdt1 * sellDest) * (1 - feeSell);
+
+    // 3) DEST -> USDT (buy)
+    const usdt2 = (destAmt / buyDest) * (1 - feeBuy);
+
+    // 4) USDT -> CLP (sell)
+    const clpOut = (usdt2 * clpSell) * (1 - feeSell);
+
+    const roiClp = (clpOut / capital) - 1;
+
+    // tipo de cambio implícito CLP/DEST usando precios USDT
+    const clpPerDest = clpBuy / sellDest;
+
+    rows.push({
+      dest,
+      clpBuy,
+      sellDest,
+      buyDest,
+      clpPerDest,
+      roi: roiClp,
+      ok: roiClp >= profitTarget
+    });
+  }
+
+  rows.sort((a,b)=>b.roi - a.roi);
+
+  const best = rows[0];
+  document.querySelector("#bestPill").textContent = best ? `Mejor: ${best.dest} (${pct(best.roi)})` : "Mejor: —";
+  document.querySelector("#bestPill").className = `pill ${best && best.ok ? "ok" : "warn"}`;
+
+  const tbody = document.querySelector("#tbody");
+  tbody.innerHTML = rows.map((r, idx)=>`
+    <tr class="${idx===0 ? "best" : ""}">
+      <td><b>${r.dest}</b></td>
+      <td>${fmt(r.clpBuy,2)}</td>
+      <td>${fmt(r.sellDest,4)}</td>
+      <td>${fmt(r.clpPerDest,6)}</td>
+      <td>${pct(r.roi)}</td>
+      <td>${pct(profitTarget)}</td>
+      <td><span class="pill ${r.ok ? "ok" : "bad"}">${r.ok ? "🟢 OPORTUNIDAD" : "🔴 NO"}</span></td>
+    </tr>
+  `).join("");
+
+  document.querySelector("#status").textContent =
+    `Actualizado: ${new Date(json.ts).toLocaleString()} · CLP BUY=${fmt(clpBuy,2)} · CLP SELL=${fmt(clpSell,2)} · objetivo=${pct(profitTarget)} · fees buy=${pct(feeBuy)} sell=${pct(feeSell)}`;
+
+  if(best && best.ok){
+    const key = `${best.dest}-${Math.round(best.roi*10000)}-${new Date(json.ts).toISOString().slice(0,16)}`;
+    if(key !== lastAlertKey){
+      lastAlertKey = key;
+
+      const hist = loadHistory();
+      hist.unshift({ time: new Date().toLocaleTimeString(), dest: best.dest, roi: pct(best.roi) });
+      saveHistory(hist);
+      renderHistory();
+
+      if(document.querySelector("#sound").checked) beep();
+      if(document.querySelector("#notif").checked) notify("Oportunidad > objetivo", `${best.dest} con ROI ${pct(best.roi)}`);
+    }
+  }
+}
+  // Status
+  document.querySelector("#status").textContent =
+    `Actualizado: ${new Date(json.ts).toLocaleString()} · USDT/CLP BUY=${fmt(clpBuy,2)} · objetivo=${pct(profitTarget)} · fees compra=${pct(feeBuy)} venta=${pct(feeSell)}`;
+
+  // Alertas + histórico: si el MEJOR supera objetivo
+  if(best && best.ok){
+    const key = `${best.dest}-${Math.round(best.roi*10000)}-${new Date(json.ts).toISOString().slice(0,16)}`;
+    if(key !== lastAlertKey){
+      lastAlertKey = key;
+
+      // guarda histórico
+      const hist = loadHistory();
+      hist.unshift({ time: new Date().toLocaleTimeString(), dest: best.dest, roi: pct(best.roi) });
+      saveHistory(hist);
+      renderHistory();
+
+      if(document.querySelector("#sound").checked) beep();
+      if(document.querySelector("#notif").checked) notify("Oportunidad > objetivo", `${best.dest} con ROI ${pct(best.roi)}`);
+    }
+  }
+}
+
+// UI hooks
+document.querySelector("#refreshBtn").addEventListener("click", ()=>load().catch(e=>alert(e.message)));
+document.querySelector("#clear").addEventListener("click", ()=>{ localStorage.removeItem("arb_history"); renderHistory(); });
+document.querySelector("#export").addEventListener("click", exportCSV);
+
+// Auto refresh configurable
+let timer = null;
+function startTimer(){
+  if(timer) clearInterval(timer);
+  const sec = Math.max(3, Number(document.querySelector("#refreshSec").value||10));
+  timer = setInterval(()=>load().catch(()=>{}), sec*1000);
+}
+document.querySelector("#refreshSec").addEventListener("change", startTimer);
+
+// Init
+renderHistory();
+load().catch(e=>alert(e.message));
+startTimer();
+</script>
+</body>
+</html>

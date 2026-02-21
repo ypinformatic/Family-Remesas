@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Family Remesas</title>
+
+<!-- 🔥 FAVICON -->
+
+<link rel="icon" type="image/png" href="/image.png?v=2">
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b1220;
+  color: white;
+  padding: 40px 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.header img {
+  height: 50px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.card {
+  background: #151e2e;
+  padding: 25px;
+  border-radius: 16px;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+}
+
+button {
+  background: #3b82f6;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #ffdd00;
+}
+
+.country-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.country-header img {
+  width: 28px;
+  height: 20px;
+  object-fit: cover;
+}
+
+.result {
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+@media(max-width: 768px){
+  .container {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- 🔥 HEADER CON LOGO -->
+<div class="header">
+  <img src="/logo.png" alt="Family Remesas">
+
+<h1>Calcula tu Envio (CLP → Destino)</h1>
+
+<div class="container">
+
+  <!-- PANEL IZQUIERDO -->
+  <div class="card">
+    <label>Monto a enviar (CLP)</label>
+    <input type="number" id="amount" value="10000" />
+
+    <label>País de destino</label>
+    <select id="country">
+      <option value="VES">Venezuela</option>
+      <option value="COP">Colombia</option>
+      <option value="USD">Ecuador</option>
+      <option value="PEN">Perú</option>
+    </select>
+
+    <button id="calcBtn">Calcular</button>
+<button id="whatsappBtn" style="margin-top:10px; background:#25D366; color:black;">
+  Continuar por WhatsApp
+</button>
+
+    <div class="result">
+      <p>Tasa ofrecida: <strong id="rate">—</strong></p>
+      <p>Recibes: <strong id="receive">—</strong></p>
+    </div>
+  </div>
+
+  <!-- PANEL DERECHO -->
+  <div class="card">
+    <h2 class="country-header">
+      <img id="flag" />
+      <span id="countryName"></span>
+    </h2>
+
+    <p>Calculado con P2P.</p>
+
+    <div class="result">
+      <p>Tasa ofrecida: <strong id="rate2">—</strong></p>
+      <p>Recibes: <strong id="receive2">—</strong></p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const amountInput = document.getElementById("amount");
+const countrySelect = document.getElementById("country");
+
+const calcBtn = document.getElementById("calcBtn");
+const whatsappBtn = document.getElementById("whatsappBtn");
+
+const rateEl = document.getElementById("rate");
+const receiveEl = document.getElementById("receive");
+const rateEl2 = document.getElementById("rate2");
+const receiveEl2 = document.getElementById("receive2");
+
+const flagImg = document.getElementById("flag");
+const countryName = document.getElementById("countryName");
+
+let lastCalculation = null;
+
+const countryData = {
+  VES: { name: "Venezuela", flag: "https://flagcdn.com/w40/ve.png" },
+  COP: { name: "Colombia", flag: "https://flagcdn.com/w40/co.png" },
+  USD: { name: "Ecuador", flag: "https://flagcdn.com/w40/ec.png" },
+  PEN: { name: "Perú", flag: "https://flagcdn.com/w40/pe.png" }
+};
+
+function updateCountryHeader() {
+  const code = countrySelect.value;
+  flagImg.src = countryData[code].flag;
+  countryName.textContent = countryData[code].name;
+}
+
+countrySelect.addEventListener("change", updateCountryHeader);
+
+// 🔥 GENERADOR ID OPERACIÓN
+function generateOperationId() {
+  const timestamp = Date.now().toString().slice(-6);
+  const random = Math.floor(Math.random() * 1000);
+  return `FC-${timestamp}-${random}`;
+}
+
+// 🔥 BOTÓN CALCULAR
+calcBtn.addEventListener("click", async () => {
+  const amount = Number(amountInput.value);
+  const dest = countrySelect.value;
+
+  try {
+    const res = await fetch("/api/calc", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amountCLP: amount, dest })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok || !data.valid) {
+      alert("Monto inválido o menor al mínimo 10 USDT.");
+      return;
+    }
+
+    rateEl.textContent = data.offeredRate.toFixed(4);
+    receiveEl.textContent = data.amountDest.toFixed(2);
+
+    rateEl2.textContent = data.offeredRate.toFixed(4);
+    receiveEl2.textContent = data.amountDest.toFixed(2);
+
+    // Guardamos resultado para WhatsApp
+    lastCalculation = {
+      amount,
+      dest,
+      rate: data.offeredRate,
+      receive: data.amountDest,
+      operationId: generateOperationId()
+    };
+
+  } catch {
+    alert("Error conectando con el servidor");
+  }
+});
+
+// 🔥 BOTÓN WHATSAPP
+whatsappBtn.addEventListener("click", () => {
+
+  if (!lastCalculation) {
+    alert("Primero debes calcular el envío.");
+    return;
+  }
+
+  const countryNameText = countryData[lastCalculation.dest].name;
+
+  const message =
+`🟢 Family Remesas
+ID Operación: ${lastCalculation.operationId}
+
+Enviar: ${lastCalculation.amount} CLP
+Destino: ${countryNameText}
+
+Tasa: ${lastCalculation.rate.toFixed(4)}
+Recibe: ${lastCalculation.receive.toFixed(2)}
+
+Quiero confirmar esta operación.`;
+
+  const phone = "56942313705"; // 🔥 CAMBIA POR TU NÚMERO REAL
+
+  const whatsappURL =
+    `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+  window.open(whatsappURL, "_blank");
+});
+
+// Inicializar
+updateCountryHeader();
+</script>
+<!-- 🔥 SECCIÓN IMPLEMENTACIÓN -->
+<section style="max-width:1000px;margin:60px auto 40px auto;text-align:center;color:#9ca3af;">
+  <h2 style="color:white;margin-bottom:20px;">¿Cómo funciona?</h2>
+  <p>1️⃣ Ingresas el monto en CLP</p>
+  <p>2️⃣ Calculamos tasa en tiempo real</p>
+  <p>3️⃣ Confirmas por WhatsApp</p>
+  <p>4️⃣ Recibes en minutos en tu país destino</p>
+</section>
+
+<!-- 🔥 FOOTER -->
+<footer style="
+  border-top:1px solid rgba(255,255,255,0.08);
+  margin-top:40px;
+  padding:30px 20px;
+  text-align:center;
+  font-size:13px;
+  color:#9ca3af;
+">
+
+  <div style="margin-bottom:10px;">
+    <strong style="color:white;">Family Remesas</strong>
+  </div>
+
+  <div style="margin-bottom:10px;">
+    Envíos internacionales.
+  </div>
+
+  <div style="margin-bottom:10px;">
+    WhatsApp: +56 9 42313705
+  </div>
+
+  <div style="margin-bottom:10px;">
+    Santiago, Chile
+  </div>
+
+<div style="margin-top:15px;">
+  © 2026 
+  <a href="https://wa.me/56942313705" target="_blank" style="color:#16c784;text-decoration:none;">
+   Family Remesas. 
+  </a> Todos los derechos reservados.
+</div>
+<div style="margin-top:15px;">
+  Elaborado por
+  <a href="https://www.instagram.com/gtsolucionesinformaticas" target="_blank" style="color:#16c784;text-decoration:none;">
+    GT Soluciones Informáticas.
+</a>
+</div>
+
+  <div style="margin-top:10px;font-size:11px;">
+    Family no es una institución financiera. Operamos como intermediario tecnológico utilizando mercados P2P.
+  </div>
+
+</footer>
+
+</body>
+</html>
