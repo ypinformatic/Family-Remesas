@@ -1,18 +1,12 @@
-﻿// 🔥 ESTA LÍNEA ES LA CLAVE
-app.use(express.static("public"));import dotenv from "dotenv";
-dotenv.config();
-import express from "express";
+﻿import express from "express";
 import axios from "axios";
 
 const app = express();
+
 app.use(express.json());
 app.use(express.static("public"));
 
 const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 
 const FEES = {
   buy: 0.007,
@@ -39,7 +33,6 @@ async function getP2PPrice(fiat, tradeType) {
     throw new Error("Sin anuncios disponibles");
   }
 
-  // 🔥 Filtrar liquidez mínima 20 USDT
   const filtered = ads
     .filter(ad => Number(ad.adv.tradableQuantity) >= 20)
     .slice(0, 5);
@@ -48,7 +41,6 @@ async function getP2PPrice(fiat, tradeType) {
     throw new Error("Sin liquidez suficiente");
   }
 
-  // 🔥 Weighted average
   let totalVolume = 0;
   let weightedSum = 0;
 
@@ -72,9 +64,6 @@ function dynamicMargin(spread) {
 
 // ---------- ENDPOINT PRINCIPAL ----------
 app.post("/api/calc", async (req, res) => {
-  ...
-});
-
   try {
     const { amountCLP, dest } = req.body;
     const clp = Number(amountCLP);
@@ -89,12 +78,9 @@ app.post("/api/calc", async (req, res) => {
     // 2️⃣ Vender USDT al país destino
     const sellPrice = await getP2PPrice(dest, "SELL");
 
-    // 3️⃣ Spread real
     const spread = (sellPrice - buyPrice) / buyPrice;
-
     const margin = dynamicMargin(spread);
 
-    // 4️⃣ Cálculo USDT
     const usdtGross = clp / buyPrice;
     const usdtAfterBuyFee = usdtGross * (1 - FEES.buy);
 
@@ -107,11 +93,8 @@ app.post("/api/calc", async (req, res) => {
     }
 
     const usdtAfterSellFee = usdtAfterBuyFee * (1 - FEES.sell);
-
     const usdtFinal = usdtAfterSellFee * (1 - margin);
-
     const destFinal = usdtFinal * sellPrice;
-
     const offeredRate = clp / destFinal;
 
     res.json({
@@ -129,11 +112,12 @@ app.post("/api/calc", async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).json({ ok: false, error: "Error Binance P2P" });
   }
 });
 
+// ---------- START SERVER ----------
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
