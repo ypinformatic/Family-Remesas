@@ -1,9 +1,4 @@
-﻿import express from "express";
-import axios from "axios";
-
-const app = express();
-
-// 🔥 ESTA LÍNEA ES LA CLAVE
+﻿// 🔥 ESTA LÍNEA ES LA CLAVE
 app.use(express.static("public"));import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
