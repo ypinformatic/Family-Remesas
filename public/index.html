@@ -1,241 +1,431 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Family Remesas</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-<!-- 🔥 FAVICON -->
+  <meta name="description" content="Envía dinero desde Chile a Venezuela, Colombia y Perú con tasa calculada en tiempo real. Rápido, seguro y confirmado por WhatsApp. Sin bancos y sin complicaciones.">
+  <meta name="keywords" content="remesas desde chile,enviar dinero a venezuela desde chile,enviar dinero a colombia desde chile,remesas chile venezuela,remesas chile colombia,remesas chile peru,envio de dinero rapido chile,transferencias internacionales chile,remesas sin banco chile,mejor tasa remesas chile,tasa peso chileno a bolivares,cambio peso chileno a pesos colombianos,envio dinero barato chile,remesas economicas chile,remesas inmediatas chile,transferencia rapida venezuela,family remesas,family remesas chile,remesas por whatsapp chile">
 
-<link rel="icon" type="image/png" href="/image.png?v=2">
+  <meta property="og:title" content="Family Remesas | Envía dinero desde Chile">
+  <meta property="og:description" content="Remesas rápidas y seguras desde Chile a Venezuela, Colombia y Perú con tasa real de mercado. Confirmación por WhatsApp.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://family-remesas.onrender.com">
+  <meta property="og:image" content="https://family-remesas.onrender.com/logo.png">
 
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0b1220;
-  color: white;
-  padding: 40px 20px;
-}
+  <meta name="robots" content="index, follow">
+  <title>Family Remesas | Envía dinero desde Chile rápido y seguro</title>
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 30px;
-}
+  <link rel="icon" type="image/png" href="/image.png?v=3">
 
-.header img {
-  height: 50px;
-}
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#151e2e;
+      --muted:#9ca3af;
+      --primary:#3b82f6;
+      --accent:#ffdd00;
+      --wa:#25D366;
+      --radius:18px;
+      --max:1200px;
+    }
 
-h1 {
-  text-align: center;
-  margin-bottom: 40px;
-}
+    *{ box-sizing:border-box; }
 
-.container {
-  max-width: 900px;
-  margin: auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-}
+    /* ✅ FIX #1: mata el scroll horizontal */
+    html, body{
+      width:100%;
+      max-width:100%;
+      overflow-x:hidden;
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:#fff;
+      font-family: Arial, sans-serif;
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
+    }
 
-.card {
-  background: #151e2e;
-  padding: 25px;
-  border-radius: 16px;
-}
+    body{
+      padding: 28px 18px;
+      padding-left: max(18px, env(safe-area-inset-left));
+      padding-right: max(18px, env(safe-area-inset-right));
+      padding-top: max(18px, env(safe-area-inset-top));
+      padding-bottom: max(18px, env(safe-area-inset-bottom));
+    }
 
-input, select, button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: none;
-  font-size: 14px;
-}
+    .page{
+      width:100%;
+      max-width: var(--max);
+      margin: 0 auto;
+    }
 
-button {
-  background: #3b82f6;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom: 22px;
+      width:100%;
+      max-width:100%;
+    }
 
-button:hover {
-  background: #ffdd00;
-}
+    /* ✅ el logo nunca puede “salirse” */
+    .topbar img{
+      height: 52px;
+      width:auto;
+      max-width: min(520px, 92vw);
+      display:block;
+      object-fit: contain;
+    }
 
-.country-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 20px;
-  margin-bottom: 10px;
-}
+    /* ✅ FIX #2: grid con minmax(0, ...) para que no empuje ancho */
+    .layout{
+      width:100%;
+      max-width:100%;
+      display:grid;
+      gap: 22px;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+      align-items:start;
+    }
 
-.country-header img {
-  width: 28px;
-  height: 20px;
-  object-fit: cover;
-}
+    /* ✅ IMPORTANTÍSIMO: evita overflow por texto largo en grid */
+    .layout > *{
+      min-width:0;
+      max-width:100%;
+    }
 
-.result {
-  margin-top: 20px;
-  font-size: 18px;
-}
+    .hero{
+      padding: 18px 6px;
+      min-width:0;
+      max-width:100%;
+    }
 
-@media(max-width: 768px){
-  .container {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
+    .hero h1{
+      margin:0;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 0.95;
+      font-size: clamp(34px, 4.8vw, 56px);
+      max-width:100%;
+      word-break: break-word;
+      overflow-wrap:anywhere;
+    }
+
+    .hero .arrow{
+      display:inline-block;
+      margin-top: 10px;
+      font-size: clamp(26px, 3.8vw, 40px);
+      opacity: 0.95;
+    }
+
+    .card{
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.28);
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      overflow:hidden;
+    }
+
+    label{
+      display:block;
+      margin-top: 10px;
+      font-size: 14px;
+      color:#e5e7eb;
+    }
+
+    input, select, button{
+      width:100%;
+      padding: 12px;
+      margin-top: 8px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      outline:none;
+    }
+
+    input, select{
+      background:#0f172a;
+      color:#fff;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    button{
+      background: var(--primary);
+      color:#fff;
+      font-weight: 800;
+      cursor:pointer;
+      transition: .15s ease;
+    }
+    button:hover{
+      background: var(--accent);
+      color:#111;
+    }
+
+    .btn-wa{
+      margin-top: 10px;
+      background: var(--wa);
+      color:#08110a;
+      font-weight: 900;
+    }
+    .btn-wa:hover{
+      filter: brightness(0.96);
+      background: var(--wa);
+      color:#08110a;
+    }
+
+    .result{
+      margin-top: 14px;
+      font-size: 16px;
+    }
+    .result p{ margin: 8px 0; }
+
+    .country-header{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size: 20px;
+      margin: 0 0 12px;
+      min-width:0;
+    }
+    .country-header img{
+      width: 38px;
+      height: 26px;
+      object-fit: cover;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.12);
+      flex: 0 0 auto;
+    }
+
+    .how h2{
+      margin:0 0 12px;
+      font-size: 28px;
+      line-height: 1.05;
+    }
+    .how .step{
+      display:flex;
+      gap: 10px;
+      margin: 10px 0;
+      color:#cbd5e1;
+      line-height: 1.25;
+    }
+    .how .n{
+      min-width: 22px;
+      height: 22px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 6px;
+      background: rgba(59,130,246,0.18);
+      border: 1px solid rgba(59,130,246,0.28);
+      color:#dbeafe;
+      font-weight: 800;
+      font-size: 12px;
+      flex: 0 0 auto;
+    }
+
+    footer{
+      border-top:1px solid rgba(255,255,255,0.08);
+      margin-top: 26px;
+      padding: 22px 10px 6px;
+      text-align:center;
+      font-size: 13px;
+      color: var(--muted);
+      max-width:100%;
+    }
+    footer a{ color:#16c784; text-decoration:none; }
+
+    /* ✅ FIX #3: MOBILE: hero arriba centrado + 1 columna */
+    @media (max-width: 900px){
+      .layout{
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .hero{
+        padding: 0;
+        text-align:center;
+      }
+
+      .hero h1{
+        font-size: clamp(30px, 9vw, 44px);
+        line-height: 1.02;
+      }
+      .hero .arrow{
+        font-size: clamp(22px, 7vw, 32px);
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <div class="page">
 
-<!-- 🔥 HEADER CON LOGO -->
-<div class="header">
-  <img src="/logo.png" alt="Family Remesas">
-
-<h1>Calcula tu Envio (CLP → Destino)</h1>
-
-<div class="container">
-
-  <!-- PANEL IZQUIERDO -->
-  <div class="card">
-    <label>Monto a enviar (CLP)</label>
-    <input type="number" id="amount" value="10000" />
-
-    <label>País de destino</label>
-    <select id="country">
-      <option value="VES">Venezuela</option>
-      <option value="COP">Colombia</option>
-      <option value="USD">Ecuador</option>
-      <option value="PEN">Perú</option>
-    </select>
-
-    <button id="calcBtn">Calcular</button>
-<button id="whatsappBtn" style="margin-top:10px; background:#25D366; color:black;">
-  Continuar por WhatsApp
-</button>
-
-    <div class="result">
-      <p>Tasa ofrecida: <strong id="rate">—</strong></p>
-      <p>Recibes: <strong id="receive">—</strong></p>
+    <div class="topbar">
+      <img src="/logo.png?v=3" alt="Family Remesas" />
     </div>
+
+    <div class="layout">
+
+      <!-- HERO -->
+      <div class="hero">
+        <h1>Calcula tu Envío<br>(CLP → Destino)</h1>
+        <div class="arrow">→</div>
+      </div>
+
+      <!-- FORM -->
+      <div class="card">
+        <label>Monto a enviar (CLP)</label>
+        <input type="number" id="amount" value="10000" inputmode="numeric" />
+
+        <label>País de destino</label>
+        <select id="country">
+          <option value="VES">Venezuela</option>
+          <option value="COP">Colombia</option>
+          <option value="USD">Ecuador</option>
+          <option value="PEN">Perú</option>
+        </select>
+
+        <button id="calcBtn">Calcular</button>
+        <button id="whatsappBtn" class="btn-wa">Continuar por WhatsApp</button>
+
+        <div class="result">
+          <p>Tasa: <strong id="rate">—</strong></p>
+          <p>Recibes: <strong id="receive">—</strong></p>
+        </div>
+      </div>
+
+      <!-- RESULT + HOW -->
+      <div style="display:flex; flex-direction:column; gap:22px; width:100%; max-width:100%; min-width:0;">
+        <div class="card">
+          <h2 class="country-header">
+            <img id="flag" alt="Bandera" />
+            <span id="countryName"></span>
+          </h2>
+
+          <p style="margin:0;color:#cbd5e1;">Calculado con P2P.</p>
+
+          <div class="result">
+            <p>Tasa: <strong id="rate2">—</strong></p>
+            <p>Recibes: <strong id="receive2">—</strong></p>
+          </div>
+        </div>
+
+        <div class="card how">
+          <h2>¿Cómo<br>funciona?</h2>
+          <div class="step"><span class="n">1</span> <span>Ingresas el monto en CLP</span></div>
+          <div class="step"><span class="n">2</span> <span>Calculamos tasa en tiempo real</span></div>
+          <div class="step"><span class="n">3</span> <span>Confirmas por WhatsApp</span></div>
+          <div class="step"><span class="n">4</span> <span>Recibes en minutos en tu país destino</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>
+      <div style="margin-bottom:8px;"><strong style="color:white;">Family Remesas</strong></div>
+      <div style="margin-bottom:8px;">Envíos internacionales.</div>
+      <div style="margin-bottom:8px;">WhatsApp: +56 9 42313705</div>
+      <div style="margin-bottom:8px;">Santiago, Chile</div>
+
+      <div style="margin-top:12px;">
+        © 2026 <a href="https://wa.me/56942313705" target="_blank">Family Remesas</a>. Todos los derechos reservados.
+      </div>
+      <div style="margin-top:10px;">
+        Elaborado por
+        <a href="https://www.instagram.com/gtsolucionesinformaticas" target="_blank">GT Soluciones Informáticas</a>.
+      </div>
+
+      <div style="margin-top:10px;font-size:11px;">
+        Family no es una institución financiera. Operamos como intermediario tecnológico utilizando mercados P2P.
+      </div>
+    </footer>
+
   </div>
 
-  <!-- PANEL DERECHO -->
-  <div class="card">
-    <h2 class="country-header">
-      <img id="flag" />
-      <span id="countryName"></span>
-    </h2>
+  <script>
+    const amountInput = document.getElementById("amount");
+    const countrySelect = document.getElementById("country");
 
-    <p>Calculado con P2P.</p>
+    const calcBtn = document.getElementById("calcBtn");
+    const whatsappBtn = document.getElementById("whatsappBtn");
 
-    <div class="result">
-      <p>Tasa ofrecida: <strong id="rate2">—</strong></p>
-      <p>Recibes: <strong id="receive2">—</strong></p>
-    </div>
-  </div>
+    const rateEl = document.getElementById("rate");
+    const receiveEl = document.getElementById("receive");
+    const rateEl2 = document.getElementById("rate2");
+    const receiveEl2 = document.getElementById("receive2");
 
-</div>
+    const flagImg = document.getElementById("flag");
+    const countryName = document.getElementById("countryName");
 
-<script>
-const amountInput = document.getElementById("amount");
-const countrySelect = document.getElementById("country");
+    let lastCalculation = null;
 
-const calcBtn = document.getElementById("calcBtn");
-const whatsappBtn = document.getElementById("whatsappBtn");
-
-const rateEl = document.getElementById("rate");
-const receiveEl = document.getElementById("receive");
-const rateEl2 = document.getElementById("rate2");
-const receiveEl2 = document.getElementById("receive2");
-
-const flagImg = document.getElementById("flag");
-const countryName = document.getElementById("countryName");
-
-let lastCalculation = null;
-
-const countryData = {
-  VES: { name: "Venezuela", flag: "https://flagcdn.com/w40/ve.png" },
-  COP: { name: "Colombia", flag: "https://flagcdn.com/w40/co.png" },
-  USD: { name: "Ecuador", flag: "https://flagcdn.com/w40/ec.png" },
-  PEN: { name: "Perú", flag: "https://flagcdn.com/w40/pe.png" }
-};
-
-function updateCountryHeader() {
-  const code = countrySelect.value;
-  flagImg.src = countryData[code].flag;
-  countryName.textContent = countryData[code].name;
-}
-
-countrySelect.addEventListener("change", updateCountryHeader);
-
-// 🔥 GENERADOR ID OPERACIÓN
-function generateOperationId() {
-  const timestamp = Date.now().toString().slice(-6);
-  const random = Math.floor(Math.random() * 1000);
-  return `FC-${timestamp}-${random}`;
-}
-
-// 🔥 BOTÓN CALCULAR
-calcBtn.addEventListener("click", async () => {
-  const amount = Number(amountInput.value);
-  const dest = countrySelect.value;
-
-  try {
-    const res = await fetch("/api/calc", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amountCLP: amount, dest })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok || !data.valid) {
-      alert("Monto inválido o menor al mínimo 10 USDT.");
-      return;
-    }
-
-    rateEl.textContent = data.offeredRate.toFixed(4);
-    receiveEl.textContent = data.amountDest.toFixed(2);
-
-    rateEl2.textContent = data.offeredRate.toFixed(4);
-    receiveEl2.textContent = data.amountDest.toFixed(2);
-
-    // Guardamos resultado para WhatsApp
-    lastCalculation = {
-      amount,
-      dest,
-      rate: data.offeredRate,
-      receive: data.amountDest,
-      operationId: generateOperationId()
+    const countryData = {
+      VES: { name: "Venezuela", flag: "https://flagcdn.com/w80/ve.png" },
+      COP: { name: "Colombia", flag: "https://flagcdn.com/w80/co.png" },
+      USD: { name: "Ecuador",   flag: "https://flagcdn.com/w80/ec.png" },
+      PEN: { name: "Perú",      flag: "https://flagcdn.com/w80/pe.png" }
     };
 
-  } catch {
-    alert("Error conectando con el servidor");
-  }
-});
+    function updateCountryHeader() {
+      const code = countrySelect.value;
+      flagImg.src = countryData[code].flag;
+      countryName.textContent = countryData[code].name;
+    }
+    countrySelect.addEventListener("change", updateCountryHeader);
 
-// 🔥 BOTÓN WHATSAPP
-whatsappBtn.addEventListener("click", () => {
+    function generateOperationId() {
+      const timestamp = Date.now().toString().slice(-6);
+      const random = Math.floor(Math.random() * 1000);
+      return `FC-${timestamp}-${random}`;
+    }
 
-  if (!lastCalculation) {
-    alert("Primero debes calcular el envío.");
-    return;
-  }
+    calcBtn.addEventListener("click", async () => {
+      const amount = Number(amountInput.value);
+      const dest = countrySelect.value;
 
-  const countryNameText = countryData[lastCalculation.dest].name;
+      try {
+        const res = await fetch("/api/calc", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amountCLP: amount, dest })
+        });
 
-  const message =
+        const data = await res.json();
+
+        if (!data.ok || !data.valid) {
+          alert("Monto inválido o menor al mínimo 10 USDT.");
+          return;
+        }
+
+        rateEl.textContent = Number(data.offeredRate).toFixed(4);
+        receiveEl.textContent = Number(data.amountDest).toFixed(2);
+        rateEl2.textContent = Number(data.offeredRate).toFixed(4);
+        receiveEl2.textContent = Number(data.amountDest).toFixed(2);
+
+        lastCalculation = {
+          amount,
+          dest,
+          rate: Number(data.offeredRate),
+          receive: Number(data.amountDest),
+          operationId: generateOperationId()
+        };
+
+      } catch {
+        alert("Error conectando con el servidor");
+      }
+    });
+
+    whatsappBtn.addEventListener("click", () => {
+      if (!lastCalculation) {
+        alert("Primero debes calcular el envío.");
+        return;
+      }
+
+      const countryNameText = countryData[lastCalculation.dest].name;
+
+      const message =
 `🟢 Family Remesas
 ID Operación: ${lastCalculation.operationId}
 
@@ -247,70 +437,12 @@ Recibe: ${lastCalculation.receive.toFixed(2)}
 
 Quiero confirmar esta operación.`;
 
-  const phone = "56942313705"; // 🔥 CAMBIA POR TU NÚMERO REAL
+      const phone = "56942313705";
+      const whatsappURL = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappURL, "_blank");
+    });
 
-  const whatsappURL =
-    `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-
-  window.open(whatsappURL, "_blank");
-});
-
-// Inicializar
-updateCountryHeader();
-</script>
-<!-- 🔥 SECCIÓN IMPLEMENTACIÓN -->
-<section style="max-width:1000px;margin:60px auto 40px auto;text-align:center;color:#9ca3af;">
-  <h2 style="color:white;margin-bottom:20px;">¿Cómo funciona?</h2>
-  <p>1️⃣ Ingresas el monto en CLP</p>
-  <p>2️⃣ Calculamos tasa en tiempo real</p>
-  <p>3️⃣ Confirmas por WhatsApp</p>
-  <p>4️⃣ Recibes en minutos en tu país destino</p>
-</section>
-
-<!-- 🔥 FOOTER -->
-<footer style="
-  border-top:1px solid rgba(255,255,255,0.08);
-  margin-top:40px;
-  padding:30px 20px;
-  text-align:center;
-  font-size:13px;
-  color:#9ca3af;
-">
-
-  <div style="margin-bottom:10px;">
-    <strong style="color:white;">Family Remesas</strong>
-  </div>
-
-  <div style="margin-bottom:10px;">
-    Envíos internacionales.
-  </div>
-
-  <div style="margin-bottom:10px;">
-    WhatsApp: +56 9 42313705
-  </div>
-
-  <div style="margin-bottom:10px;">
-    Santiago, Chile
-  </div>
-
-<div style="margin-top:15px;">
-  © 2026 
-  <a href="https://wa.me/56942313705" target="_blank" style="color:#16c784;text-decoration:none;">
-   Family Remesas. 
-  </a> Todos los derechos reservados.
-</div>
-<div style="margin-top:15px;">
-  Elaborado por
-  <a href="https://www.instagram.com/gtsolucionesinformaticas" target="_blank" style="color:#16c784;text-decoration:none;">
-    GT Soluciones Informáticas.
-</a>
-</div>
-
-  <div style="margin-top:10px;font-size:11px;">
-    Family no es una institución financiera. Operamos como intermediario tecnológico utilizando mercados P2P.
-  </div>
-
-</footer>
-
+    updateCountryHeader();
+  </script>
 </body>
 </html>
